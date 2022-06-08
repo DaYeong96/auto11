@@ -207,7 +207,7 @@ def auto_def2():
     
     st.title('용해탱크 이상탐지 예측 서비스')
     st.title(' ')
-    st.subheader('용해탱크 CSV 파일을 불러와주세요.')
+    st.subheader('용해탱크 CSV 파일을 선택해주세요.')
     st.subheader(' ')
     
     
@@ -217,13 +217,18 @@ def auto_def2():
     
     if uploaded_file is not None:
         df = pd.read_csv(uploaded_file)
+        
+        st.title(' ')
+        st.title(' ')
+        st.subheader('파일을 확인해주세요.')
         st.dataframe(df)
+        
         
         INSP=df[['INSP']]
         MELT_TEMP=df[['MELT_TEMP']]
         MOTORSPEED=df[['MOTORSPEED']]
     
-    
+        st.title(' ')
         st.title(' ')
         st.subheader('생산품의 수분함유량 Line Chart')
         st.line_chart(INSP[:100])
