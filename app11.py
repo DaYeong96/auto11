@@ -212,7 +212,7 @@ def auto_def2():
     
     
     
-    uploaded_files = st.file_uploader("Choose a CSV file", accept_multiple_files=True)
+    uploaded_file = st.file_uploader("Choose a CSV file", accept_multiple_files=True)
     
     if uploaded_file is not None:
         df = pd.read_csv(uploaded_file)
