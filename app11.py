@@ -213,73 +213,69 @@ def auto_def2():
     
     
     uploaded_files = st.file_uploader("Choose a CSV file", accept_multiple_files=True)
+    
     if uploaded_file is not None:
         df = pd.read_csv(uploaded_file)
         st.dataframe(df)
         
-
-    
-    INSP=df[['INSP']]
-    MELT_TEMP=df[['MELT_TEMP']]
-    MOTORSPEED=df[['MOTORSPEED']]
+        INSP=df[['INSP']]
+        MELT_TEMP=df[['MELT_TEMP']]
+        MOTORSPEED=df[['MOTORSPEED']]
     
     
-    st.title(' ')
-    st.subheader('생산품의 수분함유량 Line Chart')
-    st.line_chart(INSP[:100])
-    st.title(' ')
-    st.title(' ')
+        st.title(' ')
+        st.subheader('생산품의 수분함유량 Line Chart')
+        st.line_chart(INSP[:100])
+        st.title(' ')
+        st.title(' ')
     
-    
-    
-    st.subheader('용해 온도 Line Chart')
-    st.line_chart(MELT_TEMP[:100])
-    st.title(' ')
-    st.title(' ')
-    
-
    
-    st.subheader('용해 교반속도 Line Chart')
-    st.line_chart(MOTORSPEED[:100])
-    st.title(' ')
-    st.title(' ')
+        st.subheader('용해 온도 Line Chart')
+        st.line_chart(MELT_TEMP[:100])
+        st.title(' ')
+        st.title(' ')
+   
+        st.subheader('용해 교반속도 Line Chart')
+        st.line_chart(MOTORSPEED[:100])
+        st.title(' ')
+        st.title(' ')
     
   
-    new_x_df = pd.concat([INSP,MELT_TEMP,MOTORSPEED] ,axis=1)
+        new_x_df = pd.concat([INSP,MELT_TEMP,MOTORSPEED] ,axis=1)
     
-    scaler_call = joblib.load("rscaler.pkl")   #정규화
-    model_call = load_model('lstm_ae최종75_w(10)(128-32-b(64)).h5')
+        scaler_call = joblib.load("rscaler.pkl")   #정규화
+        model_call = load_model('lstm_ae최종75_w(10)(128-32-b(64)).h5')
 
-    new_x_df_scale = scaler_call.transform(new_x_df) #정규화 
-    new_x_df_scale = new_x_df_scale.reshape(1,10,3)  #3차원 
+        new_x_df_scale = scaler_call.transform(new_x_df) #정규화 
+        new_x_df_scale = new_x_df_scale.reshape(1,10,3)  #3차원 
+    
+    
+        result = model_call.predict(new_x_df_scale)  #예측 
+        
+        def flatten(X):
+            flattened_X = np.empty((X.shape[0], X.shape[2]))  # sample x features array.
+            for i in range(X.shape[0]):
+                flattened_X[i] = X[i, (X.shape[1]-1), :]
+            return(flattened_X)
+        
+        
+        mse = np.mean(np.power(flatten(new_x_df_scale) - flatten(result), 2), axis=1)
+        error_df = pd.DataFrame({'Reconstruction_error':mse})
+        threshold_fixed = 0.45472266911544296
+        pred_y = [1 if e > threshold_fixed else 0 for e in error_df['Reconstruction_error'].values]   #75
+    
+        st.title(' ')
+        st.subheader('용해탱크의 이상탐지 결과는 다음과 같습니다.')
 
-
-    result = model_call.predict(new_x_df_scale)  #예측 
-    
-    def flatten(X):
-        flattened_X = np.empty((X.shape[0], X.shape[2]))  # sample x features array.
-        for i in range(X.shape[0]):
-            flattened_X[i] = X[i, (X.shape[1]-1), :]
-        return(flattened_X)
     
     
-    mse = np.mean(np.power(flatten(new_x_df_scale) - flatten(result), 2), axis=1)
-    error_df = pd.DataFrame({'Reconstruction_error':mse})
-    threshold_fixed = 0.45472266911544296
-    pred_y = [1 if e > threshold_fixed else 0 for e in error_df['Reconstruction_error'].values]   #75
-
-    st.title(' ')
-    st.subheader('용해탱크의 이상탐지 결과는 다음과 같습니다.')
-
-    
-    
-    if INSP.sum().values == 0 or MELT_TEMP.sum().values == 0 or MOTORSPEED.sum().values == 0:
-        st.info("분석 중입니다.")
-    else:
-        if pred_y==1:
-            st.error("비정상으로 예측됩니다.")
+        if INSP.sum().values == 0 or MELT_TEMP.sum().values == 0 or MOTORSPEED.sum().values == 0:
+            st.info("분석 중입니다.")
         else:
-            st.success("정상으로 예측됩니다.")            
+            if pred_y==1:
+                st.error("비정상으로 예측됩니다.")
+            else:
+                st.success("정상으로 예측됩니다.")            
             
             
                       
