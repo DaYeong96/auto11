@@ -218,7 +218,7 @@ def auto_def2():
     if uploaded_file is not None:
         df = pd.read_csv(uploaded_file)
         
-        st.title(' ')
+ 
         st.title(' ')
         st.subheader('파일을 확인해주세요.')
         st.dataframe(df)
